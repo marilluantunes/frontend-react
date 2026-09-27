@@ -8,7 +8,7 @@ import AvaliarTab from '@/screens/AvaliarTab'
 import CardapioTab from '@/screens/CardapioTab'
 import LotacaoTab from '@/screens/LotacaoTab'
 
-import { AVALIACOES_INICIAIS, CAMPUSES, CARDAPIO_SEMANA, DIAS_SEMANA } from './data'
+import { AVALIACOES_INICIAIS, CAMPUSES, CARDAPIOS_POR_CAMPUS, DIAS_SEMANA } from './data'
 import type { Avaliacao, NivelLotacao, Reclamacao, Refeicao, ReportLotacao } from './types'
 import { getCurrentMealInfo } from './utils'
 
@@ -88,7 +88,7 @@ export default function App() {
   const handleCampusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const c = CAMPUSES.find(x => x.id === e.target.value)!
     setCampus(c)
-    if (c.id !== 'darcy' && (diaSemana === 0 || diaSemana === 6)) setDiaSemana(5)
+    if (c.id !== 'darcy' && (diaSemana === 0 || diaSemana === 6)) setDiaSemana(1)
   }
 
   const handleFoto = (file: File) => {
@@ -109,7 +109,7 @@ export default function App() {
     const nova: Avaliacao = {
       id: Date.now(), autor: avNome || 'Anônimo',
       refeicao: cardapioDia[refeicao].label,
-      campus: campus.name,          // ← NOVO
+      campus: campus.name,
       sabor: avSabor, sal: avSal, temperatura: avTemp,
       apresentacao: avApres, quantidade: avQtd, geral: avGeral,
       comentario: avComentario, foto: avFoto,
@@ -139,15 +139,20 @@ export default function App() {
     setTimeout(() => setRecSuccess(false), 3000)
   }
 
-  const cardapioDia = CARDAPIO_SEMANA[diaSemana]
+  // ── Cardápio do campus atual ──
+  const cardapioSemana = CARDAPIOS_POR_CAMPUS[campus.id] ?? CARDAPIOS_POR_CAMPUS.darcy
+  const cardapioDia = cardapioSemana[diaSemana]
   const cardapio = cardapioDia[refeicao]
   const diasDisponiveis = campus.id === 'darcy' ? [0,1,2,3,4,5,6] : [1,2,3,4,5]
-  const mediaGeral = avaliacoes.length
-    ? (avaliacoes.reduce((s, a) => s + a.geral, 0) / avaliacoes.length).toFixed(1) : '—'
+
+  // ── Avaliações e média por campus ──
+  const avaliacoesDoCampus = avaliacoes.filter(a => !a.campus || a.campus === campus.name)
+  const mediaGeral = avaliacoesDoCampus.length
+    ? (avaliacoesDoCampus.reduce((s, a) => s + a.geral, 0) / avaliacoesDoCampus.length).toFixed(1) : '—'
 
   const hoje = new Date()
   const hojeIdx = hoje.getDay()
-  const hojeCardapio = CARDAPIO_SEMANA[hojeIdx]
+  const hojeCardapio = cardapioSemana[hojeIdx]
   const mealInfo = getCurrentMealInfo()
   const hojeMeal = hojeCardapio[mealInfo.tipo]
   const planejadosCount = refeicoesPlanejadas.size
@@ -179,7 +184,7 @@ export default function App() {
 
     <A11yFloat a11yOpen={a11yOpen} setA11yOpen={setA11yOpen} fontSize={fontSize} setFontSize={setFontSize} altoContraste={altoContraste} setAltoContraste={setAltoContraste} espacamento={espacamento} setEspacamento={setEspacamento} sublinharLinks={sublinharLinks} setSublinharLinks={setSublinharLinks} />
 
-    <AppHeader campus={campus} hoje={hoje} mediaGeral={mediaGeral} totalAvaliacoes={avaliacoes.length} planejadosCount={planejadosCount} handleCampusChange={handleCampusChange} />
+    <AppHeader campus={campus} hoje={hoje} mediaGeral={mediaGeral} totalAvaliacoes={avaliacoesDoCampus.length} planejadosCount={planejadosCount} handleCampusChange={handleCampusChange} />
 
     <AppNav tab={tab} setTab={setTab} />
 
@@ -198,10 +203,9 @@ export default function App() {
               planejadosCount={planejadosCount}
               diasPlanejados={diasPlanejadosHome}
               mediaAvaliacoes={mediaGeral}
-              totalAvaliacoes={avaliacoes.length}
-              avaliacoesHoje={avaliacoes.filter(a => {
+              totalAvaliacoes={avaliacoesDoCampus.length}
+              avaliacoesHoje={avaliacoesDoCampus.filter(a => {
                 if (!hojeMeal || a.refeicao !== hojeMeal.label) return false
-                if (a.campus && a.campus !== campus.name) return false   // ← NOVO: filtra por campus
                 const hojeStr = hoje.toLocaleDateString('pt-BR')
                 return a.data === hojeStr || a.data === 'hoje'
               })}
@@ -227,7 +231,7 @@ export default function App() {
       <AvaliarTab
         tabAvaliar={tabAvaliar}
         setTabAvaliar={setTabAvaliar}
-        formProps={{ cardapioDia, refeicao, setRefeicao, avNome, setAvNome, avSabor, setAvSabor, avSal, setAvSal, avTemp, setAvTemp, avApres, setAvApres, avQtd, setAvQtd, avGeral, setAvGeral, avComentario, setAvComentario, avFoto, setAvFoto, avSuccess, fileRef, dragging, setDragging, handleFoto, handleDrop, submitAvaliacao }}
+        formProps={{ cardapioDia, refeicao, setRefeicao, campus, avNome, setAvNome, avSabor, setAvSabor, avSal, setAvSal, avTemp, setAvTemp, avApres, setAvApres, avQtd, setAvQtd, avGeral, setAvGeral, avComentario, setAvComentario, avFoto, setAvFoto, avSuccess, fileRef, dragging, setDragging, handleFoto, handleDrop, submitAvaliacao }}
         historicoProps={{ avaliacoes, mediaGeral, setTab }}
         reclamacoesProps={{ recSuccess, recCategoria, setRecCategoria, recNome, setRecNome, recDescricao, setRecDescricao, recFoto, setRecFoto, recFotoRef, submitReclamacao, reclamacoes }}
       />

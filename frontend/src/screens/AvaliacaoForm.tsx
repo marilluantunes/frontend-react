@@ -1,10 +1,11 @@
 import { StarRating } from '@/components/ui'
-import type { CardapioRefeicoes, Refeicao } from '@/types'
+import type { Campus, CardapioRefeicoes, Refeicao, RefeicaoData } from '@/types'
 
 export interface AvaliacaoFormProps {
   cardapioDia: CardapioRefeicoes
   refeicao: Refeicao
   setRefeicao: (r: Refeicao) => void
+  campus: Campus
   avNome: string
   setAvNome: (v: string) => void
   avSabor: number
@@ -32,10 +33,22 @@ export interface AvaliacaoFormProps {
   submitAvaliacao: (e: React.FormEvent) => void
 }
 
+// ── Mesma função usada na HomeScreen ──
+function temRefeicao(mealData: RefeicaoData | undefined | null): boolean {
+  if (!mealData) return false
+  const prato = mealData.prato_principal
+  if (prato === '—') return false
+  if (typeof prato === 'object' && prato?.nome === '—') return false
+  return true
+}
+
 export default function AvaliacaoForm({
   cardapioDia,
   refeicao,
   setRefeicao,
+  // campus é mantido na interface para não quebrar o App.tsx,
+  // mas não é mais usado na lógica
+  campus: _campus,
   avNome,
   setAvNome,
   avSabor,
@@ -64,23 +77,27 @@ export default function AvaliacaoForm({
 }: AvaliacaoFormProps) {
   const cardapioAtual = cardapioDia[refeicao]
 
-  // Horário atual em minutos desde 00:00
-  const now = new Date()
-  const mins = now.getHours() * 60 + now.getMinutes()
+  // ── Detecta se a refeição tem conteúdo real (dinâmico) ──
+  const temComidaHoje = temRefeicao(cardapioAtual)
 
-  // Horário de início de cada refeição (em minutos)
+  // ── Horário atual (minutos desde 00:00) ──
+  const agora = new Date()
+  const mins = agora.getHours() * 60 + agora.getMinutes()
+
   const INICIO_REFEICAO: Record<Refeicao, number> = {
     cafe: 7 * 60,      // 7h
     almoco: 11 * 60,   // 11h
     jantar: 17 * 60,   // 17h
   }
 
-  // A avaliação fica liberada a partir do início da refeição até 23:59
-  const podeAvaliar = mins >= INICIO_REFEICAO[refeicao]
+  const refeicaoJaComecou = mins >= INICIO_REFEICAO[refeicao]
+
+  // Pode avaliar se: tem refeição cadastrada E já começou
+  const podeAvaliar = temComidaHoje && refeicaoJaComecou
 
   return (
     <>
-      {/* ── Formulário de avaliação ── */}
+      {/* ── Cabeçalho ── */}
       <div className="mb-5">
         <h2 className="text-2xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
           Avaliar refeição
@@ -126,17 +143,28 @@ export default function AvaliacaoForm({
           </div>
         </div>
 
-        {/* Alerta caso o horário da refeição esteja fora da janela de atendimento */}
+        {/* Bloqueio ou formulário */}
         {!podeAvaliar ? (
           <div
             className="rounded-2xl p-6 text-center border space-y-2"
             style={{ background: '#FFFBEB', borderColor: '#FDE68A', color: '#92400E' }}
           >
             <span className="text-3xl block" aria-hidden="true">🔒</span>
-            <h3 className="font-bold text-base">Avaliação Indisponível</h3>
-            <p className="text-xs leading-relaxed max-w-sm mx-auto" style={{ color: '#B45309' }}>
-              A avaliação para o <strong>{cardapioAtual.label}</strong> estará liberada a partir das {cardapioAtual.horario.split('–')[0].trim()} e ficará disponível até o final do dia.
-            </p>
+            {!temComidaHoje ? (
+              <>
+                <h3 className="font-bold text-base">Sem funcionamento hoje</h3>
+                <p className="text-xs leading-relaxed max-w-sm mx-auto" style={{ color: '#B45309' }}>
+                  Não há <strong>{cardapioAtual.label}</strong> cadastrado para hoje neste campus.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="font-bold text-base">Avaliação Indisponível</h3>
+                <p className="text-xs leading-relaxed max-w-sm mx-auto" style={{ color: '#B45309' }}>
+                  A avaliação para o <strong>{cardapioAtual.label}</strong> estará liberada a partir das {cardapioAtual.horario.split('–')[0].trim()} e ficará disponível até o final do dia.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <>

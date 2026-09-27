@@ -10,6 +10,8 @@ export type MealStatus = 'agora' | 'proxima' | 'encerrado'
 
 export type FontSize = 'normal' | 'grande' | 'maior'
 
+export type CardapiosPorCampus = Record<string, CardapioRefeicoes[]>
+
 export interface Campus {
   id: string
   name: string
