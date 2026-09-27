@@ -3,7 +3,6 @@ import type { Campus, LotacaoStats, NivelLotacao, Refeicao } from '@/types'
 
 export interface LotacaoTabProps {
   campus: Campus
-  restaurante: string
   currentLotacao: LotacaoStats | null
   lotacaoLabel: string
   lotacaoEmoji: string
@@ -12,10 +11,10 @@ export interface LotacaoTabProps {
   lotacaoNivel: NivelLotacao | null
   setLotacaoNivel: (n: NivelLotacao) => void
   reportarLotacao: () => void
-  getLotacaoStats: (campusName: string, rest: string) => LotacaoStats | null
+  getLotacaoStats: (campusName: string) => LotacaoStats | null
 }
 
-export default function LotacaoTab({ campus, restaurante, currentLotacao, lotacaoLabel, lotacaoEmoji, lotacaoColor, lotacaoEnviada, lotacaoNivel, setLotacaoNivel, reportarLotacao, getLotacaoStats }: LotacaoTabProps) {
+export default function LotacaoTab({ campus, currentLotacao, lotacaoLabel, lotacaoEmoji, lotacaoColor, lotacaoEnviada, lotacaoNivel, setLotacaoNivel, reportarLotacao }: LotacaoTabProps) {
   return (
           <div id="panel-lotacao" role="tabpanel" aria-labelledby="tab-lotacao" className="max-w-2xl mx-auto px-4 pt-5 pb-8 space-y-5">
             <div>
@@ -27,7 +26,7 @@ export default function LotacaoTab({ campus, restaurante, currentLotacao, lotaca
             <div className="rounded-2xl overflow-hidden" style={{ background: '#fff', border: '1px solid var(--border)', boxShadow: '0 1px 12px rgba(0,0,0,0.05)' }}>
               <div className="px-5 pt-5 pb-4">
                 <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--muted-foreground)' }}>
-                  {campus.name}{campus.restaurantes.length > 1 ? ` — ${restaurante}` : ''}
+                  {campus.name}
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
@@ -113,43 +112,6 @@ export default function LotacaoTab({ campus, restaurante, currentLotacao, lotaca
                 </div>
               )
             })}
-
-            {/* Darcy comparativo */}
-            {campus.id === 'darcy' && (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--muted-foreground)' }}>
-                  Comparativo — Restaurantes do Darcy
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {campus.restaurantes.map(rest => {
-                    const stats = getLotacaoStats(campus.name, rest)
-                    const nc = stats?.predominante === 'cheio' ? '#EF4444' : stats?.predominante === 'moderado' ? '#F59E0B' : '#22C55E'
-                    const ne = stats?.predominante === 'cheio' ? '🔴' : stats?.predominante === 'moderado' ? '🟡' : '🟢'
-                    return (
-                      <div key={rest} className="rounded-2xl p-4" style={{ background: '#fff', border: '1px solid var(--border)' }}>
-                        <p className="font-semibold text-sm mb-2">{rest}</p>
-                        {stats ? (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 font-bold text-sm" style={{ color: nc }}>
-                              <span>{ne}</span>
-                              <span className="capitalize">{stats.predominante}</span>
-                              <span className="text-xs font-normal ml-auto" style={{ color: 'var(--muted-foreground)' }}>{stats.total} rep.</span>
-                            </div>
-                            <div className="flex gap-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
-                              {stats.counts.vazio > 0 && <div className="bg-green-400" style={{ width: `${(stats.counts.vazio/stats.total)*100}%` }} />}
-                              {stats.counts.moderado > 0 && <div className="bg-yellow-400" style={{ width: `${(stats.counts.moderado/stats.total)*100}%` }} />}
-                              {stats.counts.cheio > 0 && <div className="bg-red-400" style={{ width: `${(stats.counts.cheio/stats.total)*100}%` }} />}
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Nenhum reporte na última hora.</p>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
           </div>
   )
 }

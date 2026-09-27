@@ -14,7 +14,6 @@ import { getCurrentMealInfo } from './utils'
 
 export default function App() {
   const [campus, setCampus] = useState(CAMPUSES[0])
-  const [restaurante, setRestaurante] = useState(CAMPUSES[0].restaurantes[0])
   const [refeicao, setRefeicao] = useState<Refeicao>('almoco')
   const [tab, setTab] = useState<'hoje' | 'cardapio' | 'lotacao' | 'avaliar'>('hoje')
   const [diaSemana, setDiaSemana] = useState<number>(new Date().getDay())
@@ -40,14 +39,14 @@ export default function App() {
 
   const reportarLotacao = () => {
     if (!lotacaoNivel) return
-    setLotacaoReports(prev => [...prev, { campus: campus.name, restaurante, nivel: lotacaoNivel, timestamp: Date.now() }])
+    setLotacaoReports(prev => [...prev, { campus: campus.name, restaurante: '', nivel: lotacaoNivel, timestamp: Date.now() }])
     setLotacaoEnviada(true)
     setLotacaoNivel(null)
     setTimeout(() => setLotacaoEnviada(false), 2500)
   }
 
-  const getLotacaoStats = (campusName: string, rest: string) => {
-    const recentes = lotacaoReports.filter(r => r.campus === campusName && r.restaurante === rest && Date.now() - r.timestamp < 3600000)
+  const getLotacaoStats = (campusName: string) => {
+    const recentes = lotacaoReports.filter(r => r.campus === campusName && Date.now() - r.timestamp < 3600000)
     const total = recentes.length
     if (total === 0) return null
     const counts = { vazio: 0, moderado: 0, cheio: 0 }
@@ -56,7 +55,7 @@ export default function App() {
     return { total, counts, predominante }
   }
 
-  const currentLotacao = getLotacaoStats(campus.name, restaurante)
+  const currentLotacao = getLotacaoStats(campus.name)
   const lotacaoLabel = currentLotacao?.predominante === 'cheio' ? 'Alto movimento' :
                        currentLotacao?.predominante === 'moderado' ? 'Movimento moderado' : 'Tranquilo'
   const lotacaoEmoji = currentLotacao?.predominante === 'cheio' ? '🔴' :
@@ -92,7 +91,6 @@ export default function App() {
   const handleCampusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const c = CAMPUSES.find(x => x.id === e.target.value)!
     setCampus(c)
-    setRestaurante(c.restaurantes[0])
     if (c.id !== 'darcy' && (diaSemana === 0 || diaSemana === 6)) setDiaSemana(5)
   }
 
@@ -156,7 +154,6 @@ export default function App() {
   const hojeMeal = hojeCardapio[mealInfo.tipo]
   const planejadosCount = refeicoesPlanejadas.size
 
-  // Build week-day planning summary for HomeScreen (Mon–Fri for non-Darcy, all for Darcy)
   const diasPlanejadosHome = useMemo(() => {
     return diasDisponiveis.map(d => ({
       dia: d,
@@ -177,32 +174,26 @@ export default function App() {
       className={`min-h-screen ${espacamento ? 'tracking-wide leading-loose' : ''} ${sublinharLinks ? 'underline-links' : ''} ${altoContraste ? 'alto-contraste' : ''}`}
       style={{ background: 'var(--background)', color: 'var(--foreground)' }}
     >
-      {/* Skip link */}
       <a href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold focus:text-sm focus:text-white focus:shadow-lg"
         style={{ background: 'var(--primary)' }}>
         Pular para o conteúdo
       </a>
 
-    {/* Acessibilidade flutuante */}
     <A11yFloat a11yOpen={a11yOpen} setA11yOpen={setA11yOpen} fontSize={fontSize} setFontSize={setFontSize} altoContraste={altoContraste} setAltoContraste={setAltoContraste} espacamento={espacamento} setEspacamento={setEspacamento} sublinharLinks={sublinharLinks} setSublinharLinks={setSublinharLinks} />
 
-    {/* Header */}
-    <AppHeader campus={campus} restaurante={restaurante} hoje={hoje} mediaGeral={mediaGeral} totalAvaliacoes={avaliacoes.length} planejadosCount={planejadosCount} handleCampusChange={handleCampusChange} onRestauranteChange={setRestaurante} />
+    <AppHeader campus={campus} hoje={hoje} mediaGeral={mediaGeral} totalAvaliacoes={avaliacoes.length} planejadosCount={planejadosCount} handleCampusChange={handleCampusChange} />
 
-    {/* Nav */}
     <AppNav tab={tab} setTab={setTab} />
 
-      {/* Content */}
       <main id="main-content" style={{ scrollMarginTop: '60px', background: 'var(--background)' }}>
 
-        {/* ─── HOJE ─── */}
         {tab === 'hoje' && (
           <div id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
             <HomeScreen
               hoje={hoje}
               campusName={campus.name}
-              restauranteName={campus.restaurantes.length > 1 ? restaurante : campus.name}
+              restauranteName={campus.name}
               mealTipo={mealInfo.tipo}
               mealStatus={mealInfo.status}
               mealData={hojeMeal}
@@ -226,17 +217,14 @@ export default function App() {
           </div>
         )}
 
-    {/* ─── CARDÁPIO ─── */}
     {tab === 'cardapio' && (
       <CardapioTab cardapioDia={cardapioDia} diaSemana={diaSemana} setDiaSemana={setDiaSemana} diasDisponiveis={diasDisponiveis} refeicao={refeicao} setRefeicao={setRefeicao} isPlanejada={isPlanejada} planejadosCount={planejadosCount} cardapio={cardapio} />
     )}
 
-    {/* ─── LOTAÇÃO ─── */}
     {tab === 'lotacao' && (
-      <LotacaoTab campus={campus} restaurante={restaurante} currentLotacao={currentLotacao} lotacaoLabel={lotacaoLabel} lotacaoEmoji={lotacaoEmoji} lotacaoColor={lotacaoColor} lotacaoEnviada={lotacaoEnviada} lotacaoNivel={lotacaoNivel} setLotacaoNivel={setLotacaoNivel} reportarLotacao={reportarLotacao} getLotacaoStats={getLotacaoStats} />
+      <LotacaoTab campus={campus} currentLotacao={currentLotacao} lotacaoLabel={lotacaoLabel} lotacaoEmoji={lotacaoEmoji} lotacaoColor={lotacaoColor} lotacaoEnviada={lotacaoEnviada} lotacaoNivel={lotacaoNivel} setLotacaoNivel={setLotacaoNivel} reportarLotacao={reportarLotacao} getLotacaoStats={getLotacaoStats} />
     )}
 
-    {/* ─── AVALIAR ─── */}
     {tab === 'avaliar' && (
       <AvaliarTab
         tabAvaliar={tabAvaliar}
@@ -248,7 +236,7 @@ export default function App() {
     )}
       </main>
 
-    <AppFooter campus={campus} restaurante={restaurante} />
+    <AppFooter campus={campus} />
   </div>
   )
 }

@@ -1,11 +1,11 @@
 import type { Avaliacao, Campus, CardapioRefeicoes, CategoriaReclamacao, Refeicao } from '@/types'
 
 export const CAMPUSES: Campus[] = [
-  { id: 'darcy', name: 'Darcy Ribeiro', restaurantes: ['Restaurante 1', 'Restaurante 2', 'Restaurante 3', 'Restaurante 4', 'Restaurante 5', 'Restaurante 6'] },
-  { id: 'gama', name: 'Gama', restaurantes: ['Restaurante Universitário do Gama'] },
-  { id: 'planaltina', name: 'Planaltina', restaurantes: ['Restaurante Universitário de Planaltina'] },
-  { id: 'ceilandia', name: 'Ceilândia', restaurantes: ['Restaurante Universitário de Ceilândia'] },
-  { id: 'fal', name: 'FAL', restaurantes: ['Restaurante Universitário da FAL'] },
+  { id: 'darcy', name: 'Darcy Ribeiro'},
+  { id: 'gama', name: 'Gama' },
+  { id: 'planaltina', name: 'Planaltina' },
+  { id: 'ceilandia', name: 'Ceilândia' },
+  { id: 'fal', name: 'FAL' },
 ]
 
 // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb

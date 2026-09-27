@@ -3,16 +3,14 @@ import type { Campus } from '@/types'
 
 export interface AppHeaderProps {
   campus: Campus
-  restaurante: string
   hoje: Date
   mediaGeral: string
   totalAvaliacoes: number
   planejadosCount: number
   handleCampusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-  onRestauranteChange: (value: string) => void
 }
 
-export default function AppHeader({ campus, restaurante, hoje, mediaGeral, totalAvaliacoes, planejadosCount, handleCampusChange, onRestauranteChange }: AppHeaderProps) {
+export default function AppHeader({ campus, hoje, mediaGeral, totalAvaliacoes, planejadosCount, handleCampusChange }: AppHeaderProps) {
   return (
       <header style={{ background: '#0f2d1a', position: 'relative', overflow: 'hidden' }}>
         <div aria-hidden="true" style={{
@@ -56,23 +54,11 @@ export default function AppHeader({ campus, restaurante, hoje, mediaGeral, total
                 <path d="M2.5 4.5l3.5 3 3.5-3" stroke="#C9A84C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            {campus.restaurantes.length > 1 && (
-              <div className="relative">
-                <select value={restaurante} onChange={e => onRestauranteChange(e.target.value)} aria-label="Selecionar restaurante"
-                  className="appearance-none cursor-pointer text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]"
-                  style={{ background: 'rgba(255,255,255,0.07)', color: '#fff', border: '1px solid rgba(201,168,76,0.35)', borderRadius: '999px', padding: '0.55rem 2.4rem 0.55rem 1.1rem' }}>
-                  {campus.restaurantes.map(r => <option key={r} value={r} style={{ color: '#1A1A18', background: '#fff' }}>{r}</option>)}
-                </select>
-                <svg aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M2.5 4.5l3.5 3 3.5-3" stroke="#C9A84C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            )}
           </div>
         </div>
         <div style={{ borderTop: '1px solid rgba(201,168,76,0.15)', background: 'rgba(0,0,0,0.25)' }} className="px-5 sm:px-8 py-2">
           <div className="max-w-5xl mx-auto flex flex-wrap items-center gap-x-4 gap-y-0.5 text-[10px] mono" style={{ color: 'rgba(168,213,181,0.7)' }}>
-            <span>📍 {campus.name}{campus.restaurantes.length > 1 ? ` — ${restaurante}` : ''}</span>
+            <span>📍 {campus.name}</span>
             <span aria-hidden="true" className="opacity-30">·</span>
             <span>📅 {hoje.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
             <span aria-hidden="true" className="opacity-30">·</span>

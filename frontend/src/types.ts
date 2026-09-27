@@ -13,7 +13,6 @@ export type FontSize = 'normal' | 'grande' | 'maior'
 export interface Campus {
   id: string
   name: string
-  restaurantes: string[]
 }
 
 export type RefeicaoData = {
