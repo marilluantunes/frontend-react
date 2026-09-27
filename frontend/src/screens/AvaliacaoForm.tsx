@@ -1,5 +1,4 @@
 import { StarRating } from '@/components/ui'
-import { getCurrentMealInfo } from '@/utils'
 import type { CardapioRefeicoes, Refeicao } from '@/types'
 
 export interface AvaliacaoFormProps {
@@ -64,12 +63,20 @@ export default function AvaliacaoForm({
   submitAvaliacao,
 }: AvaliacaoFormProps) {
   const cardapioAtual = cardapioDia[refeicao]
-  
-  // Obtém informações da refeição ativa no momento atual do sistema
-  const mealInfo = getCurrentMealInfo()
-  
-  // Só permite avaliar se a refeição selecionada na aba for exatamente a que está a decorrer agora
-  const podeAvaliar = refeicao === mealInfo.tipo && mealInfo.status === 'agora'
+
+  // Horário atual em minutos desde 00:00
+  const now = new Date()
+  const mins = now.getHours() * 60 + now.getMinutes()
+
+  // Horário de início de cada refeição (em minutos)
+  const INICIO_REFEICAO: Record<Refeicao, number> = {
+    cafe: 7 * 60,      // 7h
+    almoco: 11 * 60,   // 11h
+    jantar: 17 * 60,   // 17h
+  }
+
+  // A avaliação fica liberada a partir do início da refeição até 23:59
+  const podeAvaliar = mins >= INICIO_REFEICAO[refeicao]
 
   return (
     <>
@@ -128,7 +135,7 @@ export default function AvaliacaoForm({
             <span className="text-3xl block" aria-hidden="true">🔒</span>
             <h3 className="font-bold text-base">Avaliação Indisponível</h3>
             <p className="text-xs leading-relaxed max-w-sm mx-auto" style={{ color: '#B45309' }}>
-            A avaliação para o <strong>{cardapioAtual.label}</strong> estará liberada a partir do início do horário de funcionamento ({cardapioAtual.horario.split('–')[0].trim()}) e ficará disponível até o final do dia.
+              A avaliação para o <strong>{cardapioAtual.label}</strong> estará liberada a partir das {cardapioAtual.horario.split('–')[0].trim()} e ficará disponível até o final do dia.
             </p>
           </div>
         ) : (

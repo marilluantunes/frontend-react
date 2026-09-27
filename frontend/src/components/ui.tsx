@@ -3,11 +3,8 @@ import { ALERGENOS_MAP } from '@/data'
 import type { Avaliacao, AvaliacaoLive, ItemCardapio } from '@/types'
 import { iAlerg } from '@/utils'
 
-// SEGUNDA OPÇÃO: 'value' passa a aceitar 'number | undefined' (value?: number)
-export function StarRating({ value = 0, onChange, label, id }: { value?: number; onChange?: (v: number) => void; label?: string; id?: string }) {
+export function StarRating({ value, onChange, label, id }: { value: number; onChange?: (v: number) => void; label?: string; id?: string }) {
   const [hovered, setHovered] = useState(0)
-  const currentVal = value ?? 0
-
   return (
     <div className="flex flex-col gap-1.5">
       {label && <span id={id} className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">{label}</span>}
@@ -16,9 +13,9 @@ export function StarRating({ value = 0, onChange, label, id }: { value?: number;
           <button
             key={s} type="button"
             aria-label={`${s} estrela${s > 1 ? 's' : ''}${label ? ` para ${label}` : ''}`}
-            aria-pressed={s === currentVal}
+            aria-pressed={s === value}
             className="text-2xl leading-none rounded-sm transition-transform hover:scale-110"
-            style={{ color: s <= (onChange ? (hovered || currentVal) : currentVal) ? '#E8570A' : '#D5CFC5' }}
+            style={{ color: s <= (onChange ? (hovered || value) : value) ? '#E8570A' : '#D5CFC5' }}
             onMouseEnter={() => onChange && setHovered(s)}
             onMouseLeave={() => onChange && setHovered(0)}
             onClick={() => onChange?.(s)}
@@ -29,18 +26,15 @@ export function StarRating({ value = 0, onChange, label, id }: { value?: number;
   )
 }
 
-// SEGUNDA OPÇÃO: 'value' aceita 'number | undefined' sem quebrar o cálculo de porcentagem ou estilo
-export function RatingBar({ label, value = 0 }: { label: string; value?: number }) {
-  const safeValue = value ?? 0
-  const color = safeValue >= 4 ? '#2D6A3F' : safeValue === 3 ? '#92600A' : '#CC2C2C'
-  
+export function RatingBar({ label, value }: { label: string; value: number }) {
+  const color = value >= 4 ? '#2D6A3F' : value === 3 ? '#92600A' : '#CC2C2C'
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-[var(--muted-foreground)] w-14 shrink-0">{label}</span>
       <div className="flex-1 h-1.5 rounded-full bg-[var(--muted)] overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${(safeValue / 5) * 100}%`, background: color }} />
+        <div className="h-full rounded-full transition-all" style={{ width: `${(value/5)*100}%`, background: color }} />
       </div>
-      <span className="text-xs font-bold w-6 text-right" style={{ color }}>{safeValue}</span>
+      <span className="text-xs font-bold w-6 text-right" style={{ color }}>{value}</span>
     </div>
   )
 }
@@ -59,11 +53,11 @@ export function AvaliacaoCard({ av }: { av: Avaliacao }) {
             </div>
             <div>
               <p className="font-semibold text-sm leading-tight">{av.autor}</p>
-              <p className="text-xs text-[var(--muted-foreground)]">{av.refeicao} · {av.data}</p>
+              <p className="text-xs text-[var(--muted-foreground)]">{av.refeicao}{av.campus ? ` · ${av.campus}` : ''} · {av.data}</p>
             </div>
           </div>
           <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: '#FEF3E2' }}>
-            <span className="text-[#E8570A] font-bold text-sm">{av.geral ?? 0}</span>
+            <span className="text-[#E8570A] font-bold text-sm">{av.geral}</span>
             <span className="text-[#E8570A] text-xs">★</span>
           </div>
         </div>
@@ -97,11 +91,11 @@ export function AvaliacaoCard({ av }: { av: Avaliacao }) {
       </div>
       {expanded && (
         <div className="px-5 pb-5 pt-2 border-t border-[var(--border)] space-y-2">
-          <RatingBar label="Sabor" value={av.sabor} />
-          <RatingBar label="Sal" value={av.sal} />
-          <RatingBar label="Temp." value={av.temperatura} />
-          <RatingBar label="Apresent." value={av.apresentacao} />
-          <RatingBar label="Qtd." value={av.quantidade} />
+          <RatingBar label="Sabor" value={av.sabor ?? 0} />
+          <RatingBar label="Sal" value={av.sal ?? 0} />
+          <RatingBar label="Temp." value={av.temperatura ?? 0} />
+          <RatingBar label="Apresent." value={av.apresentacao ?? 0} />
+          <RatingBar label="Qtd." value={av.quantidade ?? 0} />
         </div>
       )}
     </div>
@@ -176,9 +170,6 @@ export function LiveAvaliacaoCard({
     av.autor
       .split("")
       .reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0) % 360
-  
-  const geralVal = av.geral ?? 0
-
   return (
     <div
       className="rounded-2xl p-4"
@@ -201,7 +192,7 @@ export function LiveAvaliacaoCard({
                   key={s}
                   style={{
                     fontSize: "11px",
-                    color: s <= geralVal ? "#E8570A" : "#D5CFC5",
+                    color: s <= av.geral ? "#E8570A" : "#D5CFC5",
                   }}
                 >
                   ★
@@ -219,7 +210,7 @@ export function LiveAvaliacaoCard({
             >
               {mealLabel}
             </span>
-            {restauranteName} · {av.data}
+            {av.campus ?? restauranteName} · {av.data}
             {av.horario ? ` às ${av.horario}` : ""}
           </p>
           {av.comentario && (

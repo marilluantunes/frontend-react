@@ -88,3 +88,21 @@ export interface FiltrosAlimentares {
   vegetarianoEstrito: boolean
   alergenos: string[]
 }
+
+
+export interface Avaliacao {
+  id: number | string
+  autor: string
+  refeicao: string
+  campus?: string          // ← novo
+  sabor?: number
+  sal?: number
+  temperatura?: number
+  apresentacao?: number
+  quantidade?: number
+  geral: number
+  comentario: string
+  foto?: string | null
+  data: string
+  horario?: string
+}

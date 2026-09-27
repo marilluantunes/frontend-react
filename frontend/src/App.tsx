@@ -19,7 +19,6 @@ export default function App() {
   const [diaSemana, setDiaSemana] = useState<number>(new Date().getDay())
   const [tabAvaliar, setTabAvaliar] = useState<'form' | 'historico' | 'reclamacao'>('form')
 
-  // Meal planning
   const [refeicoesPlanejadas, setRefeicoesPlanejadas] = useState<Set<string>>(new Set())
   const togglePlanejada = (dia: number, ref: Refeicao) => {
     const key = `${dia}-${ref}`
@@ -32,7 +31,6 @@ export default function App() {
   }
   const isPlanejada = (dia: number, ref: Refeicao) => refeicoesPlanejadas.has(`${dia}-${ref}`)
 
-  // Lotação
   const [lotacaoReports, setLotacaoReports] = useState<ReportLotacao[]>([])
   const [lotacaoEnviada, setLotacaoEnviada] = useState(false)
   const [lotacaoNivel, setLotacaoNivel] = useState<NivelLotacao | null>(null)
@@ -63,7 +61,6 @@ export default function App() {
   const lotacaoColor = currentLotacao?.predominante === 'cheio' ? '#EF4444' :
                        currentLotacao?.predominante === 'moderado' ? '#F59E0B' : '#22C55E'
 
-  // Avaliações
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>(AVALIACOES_INICIAIS)
   const [reclamacoes, setReclamacoes] = useState<Reclamacao[]>([])
 
@@ -112,6 +109,7 @@ export default function App() {
     const nova: Avaliacao = {
       id: Date.now(), autor: avNome || 'Anônimo',
       refeicao: cardapioDia[refeicao].label,
+      campus: campus.name,          // ← NOVO
       sabor: avSabor, sal: avSal, temperatura: avTemp,
       apresentacao: avApres, quantidade: avQtd, geral: avGeral,
       comentario: avComentario, foto: avFoto,
@@ -162,7 +160,6 @@ export default function App() {
     }))
   }, [diasDisponiveis, refeicoesPlanejadas])
 
-  // Acessibilidade
   const [a11yOpen, setA11yOpen] = useState(false)
   const [fontSize, setFontSize] = useState<'normal' | 'grande' | 'maior'>('normal')
   const [altoContraste, setAltoContraste] = useState(false)
@@ -204,6 +201,7 @@ export default function App() {
               totalAvaliacoes={avaliacoes.length}
               avaliacoesHoje={avaliacoes.filter(a => {
                 if (!hojeMeal || a.refeicao !== hojeMeal.label) return false
+                if (a.campus && a.campus !== campus.name) return false   // ← NOVO: filtra por campus
                 const hojeStr = hoje.toLocaleDateString('pt-BR')
                 return a.data === hojeStr || a.data === 'hoje'
               })}
